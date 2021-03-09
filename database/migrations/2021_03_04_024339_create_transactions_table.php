@@ -22,6 +22,7 @@ class CreateTransactionsTable extends Migration
             $table->unsignedBigInteger('usr_id')->nullable();
             $table->foreign('usr_id')->references('id')->on('users')->onDelete('cascade');
             $table->double('amt', 8,2);
+            $table->string('order_identifier');
             $table->enum('type', ['debit', 'credit', 'cash']);
             $table->timestamps();
         });

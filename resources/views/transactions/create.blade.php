@@ -2,7 +2,12 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            Add New Transaction
+            Transaction #:{{ Session::get('order_identifier')}}, Cashier: {{ Auth::user()->name }}, <span class="text-right">Date: {{  Carbon\Carbon::now() }}</span><p class="text-right">
+                <form id="transactionForm" action="/transaction/store" method="POST">
+                    @csrf
+                </form>
+                <x-button form="transactionForm"> Checkout</x-button>
+               </p>
         </h2>   
       
     </x-slot>
@@ -11,10 +16,7 @@
     <div class="content">
        
         <div class="container">
-            <br>
-           <p class="text-right">
-            <x-button onclick="window.location.href='/transaction/store'"> Checkout</x-button>
-           </p>
+           
           <div class="row">
             <div class="col-md-7">
                 <div class="card">
@@ -23,26 +25,44 @@
                 @csrf
                 </form>
                 <table class="table table-responsive table-bordered">
-                    <thead>
+                    <thead border="1" width="183" style='table-layout:fixed'>
                         <?php $ctr=1; ?>
                         <tr>
                             <th>#</th>
-                            <th>Item ID</th>
+                            <th>ID</th>
                             <th>Item</th>
                             <th>Price</th>
-                            <th>Qty</th>
+                            <th>Quantity</th>
                             <th>Total</th>
+                            <td></td>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach ($orders as $order)
                             <tr>
-                                <th>{{$ctr++ }}</th>
-                                <th>{{ $order->inv_id }}</th>
+                                <th width="5">{{$ctr++ }}</th>
+                                <th width="50">{{ $order->inv_id }}
+                                    <input form="transactionForm" type="hidden" name="inv_id" value="{{ $order->inv_id }}">
+                                </th>
                                 <td>{{ $order->name }}</td>
-                                <td>{{ $order->price }}</td>
-                                <td>{{ $order->qty_total }}</td>
-                                <td>{{ number_format($order->price*$order->qty_total, 2) }}</td>
+                                <td>{{ number_format($order->price, 2) }}</td>
+                                <td width="50">
+                                    <form action="/order/{{ Session::get('order_identifier') }}/inventory/{{ $order->id }}/item/{{ $order->order_id }}/remove" method="POST">
+                                        @csrf
+                                        @method('PUT')
+                                        <x-input class="form-control" type="number" value="{{ $order->qty_total }}"/>
+                                    </form>
+                                </td>
+                                <td>{{ number_format($order->price*$order->qty_total, 2) }}
+                         
+                                </td>
+                                <td width="50">
+                                  
+                                        <x-button onclick="window.location.href='/order/{{ Session::get('order_identifier') }}/inventory/{{ $order->id }}/item/{{ $order->order_id }}/remove'"> 
+                                            Remove
+                                        </x-button>
+
+                                </td>
                             </tr>
                         @endforeach
                         @if($orders->count()<=0)
@@ -59,11 +79,15 @@
                             <th></th>
                             <th></th>
                             <th></th>
+                        
                             <th>
                              
                         {{ number_format($orders->sum('qty_total')*$orders->sum('price'), 2) }}
-                      
+                        <input form="transactionForm" type="hidden" name="amt" value="{{ $orders->sum('qty_total')*$orders->sum('price') }}">
+                        <input form="transactionForm" type="hidden" name="type" value="cash">
+                        <input form="transactionForm" type="hidden" name="usr_id" value="{{ Auth::user()->id }}">
                             </th>
+                            <th></th>
                         </tr>
                         @endif
                        
@@ -76,12 +100,12 @@
             <div class="col-md-5">
                 <div class="card">
                     <div class="card-body">
-                <form action="/transaction/add" method="GET" >
+                <form action="/order/{{ Session::get('order_identifier') }}" method="GET" >
                     @csrf
                     <div class="input-group">
                         <x-input type="text" class="form-control" name="item" placeholder="e.g., Eden Cheese" />
                         <div class="input-group-append">
-                            <x-button onclick="window.location.href='/transaction/add'"> 
+                            <x-button onclick="window.location.href='/order/{{ Session::get('order_identifier') }}'"> 
                                 Clear
                             </x-button>
                           <x-button type="submit">
@@ -115,7 +139,7 @@
                         @endif
                         </td>    
                     
-                        <td class="text-center">
+                        <td class="text-center" width="50">
                         @if($item->qty <=0 )
                         <x-button class="text-center" disabled onclick="window.location.href='/item/{{ $item->id }}/add'"> Add</x-button>
                         @else

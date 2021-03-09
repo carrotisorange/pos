@@ -24,16 +24,18 @@
                           #
                         </th>
                         <th>
-                          Item ID
+                          Transaction ID
                         </th>
-                        <th>
-                          Amount
-                        </th>
+                       
                         <th>
                           Payment
                         </th>
                         <th>
                           Date
+                        </th>
+                        <th>Cashier</th>
+                        <th>
+                          Amount
                         </th>
                         {{-- <th>
                           Updated on
@@ -46,12 +48,10 @@
                           <td>
                             {{ $item->id }}
                           </td>
-                          <td>
-                            {{ $item->inv_id }}
-                          </td>
-                          <td>
-                            {{ number_format($item->amt,2) }}
-                          </td>
+                          <th>
+                            <a href="/transaction/{{$item->id}}/{{ $item->order_identifier }}">{{ $item->order_identifier }}</a>
+                          </th>
+                         
                           <td>
                             {{ $item->type }}
                           </td>
@@ -67,9 +67,20 @@
                           <td>
                             <x-button onclick="window.location.href='/item/{{ $item->id }}/edit'">View</x-button>
                           </td> --}}
+                          <td>{{ Auth::user()->name }}</td>
+                          <td>
+                            {{ number_format($item->amt,2) }}
+                          </td>
                         </tr>
                         @endforeach
-                       
+                       <tr>
+                        <th>TOTAL</th>
+                         <th></th>
+                         <th></th>
+                         <th></th>
+                         <th></th>
+                         <th>{{ number_format($transactions->sum('amt'),2) }}</th>
+                       </tr>
                       </tbody>
                     </table>
                   </div>

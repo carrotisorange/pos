@@ -48,8 +48,8 @@
     <br>
     <!-- Quantity -->
     <div>
-
     <p class="text-right">
+        <x-button onclick="window.location.href='/item/add'">Add Another Item</x-button>
         <x-button form="inventoryform" >Update Item</x-button>
     </p>
  </div>

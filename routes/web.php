@@ -53,11 +53,14 @@ Route::get('/transactions', function () {
 
 
 Route::get('/transaction/add', 'TransactionController@create')->middleware(['auth']);
-Route::post('/transaction/add', 'TransactionController@create')->middleware(['auth']);
 Route::get('/item/{item_id}/add', 'TransactionController@add')->middleware(['auth']);
 Route::post('/transaction/store', 'TransactionController@store')->middleware(['auth']);
-Route::get('/transaction/{edit_id}/edit', 'TransactionController@edit')->middleware(['auth']);
-Route::put('/transaction/{edit_id}/update', 'TransactionController@update')->middleware(['auth']);
+Route::get('/transaction/{item_id}/{transaction_id}', 'TransactionController@show')->middleware(['auth']);
+
+//routes for orders
+Route::get('/order/{order_identifier}', 'OrderController@create')->middleware(['auth']);
+Route::get('/order/{order_identifier}/inventory/{inv_id}/item/{item_id}/remove', 'OrderController@destroy')->middleware(['auth']);
+Route::put('/order/{order_identifier}/inventory/{inv_id}/item/{item_id}/update', 'OrderController@update')->middleware(['auth']);
 
 //routes for customers
 Route::get('/customers', function () {

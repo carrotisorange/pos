@@ -36,9 +36,7 @@ class TransactionController extends Controller
             Session::put('order_identifier',Str::random(8));
         }
 
-        $items = DB::table('inventories')
-        ->whereRaw("name like '%$request->item%'")
-        ->get();
+        $items = Inventory::all();
 
         $orders = DB::table('orders')
         ->join('inventories', 'inv_id', 'orders.id')
@@ -65,18 +63,9 @@ class TransactionController extends Controller
         $order->order_identifier =  Session::get('order_identifier');
         $order->save();
 
-        $items = Inventory::all();
+        return redirect('/order/'.Session::get('order_identifier'))->with('success', $item->name.' is added to the cart.');
 
-        $orders = DB::table('orders')
-        ->join('inventories', 'inv_id', 'inventories.id')
-        ->selectRaw('*, (sum(orders.qty)) as qty_total, orders.qty as order_qty, inv_id')
-        ->where('order_identifier', Session::get('order_identifier'))
-        ->groupBy('inv_id')
-        ->get();
-
-        Session::flash('success', $item->name.' is added to the cart.'); 
-
-       return view('transactions.create', compact('items', 'orders'));
+      
     }
 
     /**
@@ -87,7 +76,16 @@ class TransactionController extends Controller
      */
     public function store(Request $request)
     {
-        
+        $transaction = new Transaction();
+        $transaction->type = $request->type;
+        $transaction->amt = $request->amt;
+        $transaction->inv_id = $request->inv_id;
+        $transaction->order_identifier =  Session::get('order_identifier');
+        $transaction->save();
+
+        Session::forget('order_identifier');
+
+        return redirect('/transaction/add')->with('success', 'Transaction is added successfully.');
     }
 
     /**
@@ -96,9 +94,18 @@ class TransactionController extends Controller
      * @param  \App\Models\Transaction  $transaction
      * @return \Illuminate\Http\Response
      */
-    public function show(Transaction $transaction)
+    public function show($transaction_id, $order_identifier)
     {
-        //
+        $orders = DB::table('orders')
+        ->join('inventories', 'inv_id', 'inventories.id')
+        ->selectRaw('*, (sum(orders.qty)) as qty_total, orders.qty as order_qty, inv_id, orders.id as order_id')
+        ->where('order_identifier', $order_identifier)
+        ->groupBy('inv_id')
+        ->get();
+
+        $transaction = Transaction::findOrFail($transaction_id);
+
+        return view('transactions.show', compact('orders','transaction'));
     }
 
     /**
